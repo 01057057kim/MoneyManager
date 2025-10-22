@@ -1,4 +1,4 @@
-# Money Manager (Currently under development.)
+# Money Manager (Currently under development)
 
 A comprehensive financial, time, and productivity platform built with the MERN stack. This application allows users to track income, expenses, budgets, tasks, and clients within unified group workspaces.
 
