@@ -53,11 +53,13 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.get(`/transactions/${groupId}`);
-      if (!Array.isArray(response.data)) {
+      // Handle new API response format with data property
+      const transactions = response.data?.data || response.data || [];
+      if (!Array.isArray(transactions)) {
         throw new Error('Invalid response format from server');
       }
       set({ 
-        transactions: response.data.map((t: any) => ({
+        transactions: transactions.map((t: any) => ({
           ...t,
           date: new Date(t.date)
         })),
@@ -77,14 +79,15 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
       if (!response.data || !response.data.id) {
         throw new Error('Invalid response format from server');
       }
+      const newTransaction = response.data?.data || response.data;
       set(state => ({
         transactions: [...state.transactions, {
-          ...response.data,
-          date: new Date(response.data.date)
+          ...newTransaction,
+          date: new Date(newTransaction.date)
         }],
         isLoading: false
       }));
-      return response.data; // Return for success handling
+      return newTransaction; // Return for success handling
     } catch (error) {
       console.error('Add transaction error:', error);
       set({ error: 'Failed to add transaction', isLoading: false });
@@ -96,13 +99,14 @@ export const useTransactionStore = create<TransactionStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.put(`/transactions/${id}`, transaction);
+      const updatedTransaction = response.data?.data || response.data;
       set(state => ({
         transactions: state.transactions.map(t =>
           t.id === id ? { 
             ...t, 
-            ...response.data,
-            id: response.data._id, // Map MongoDB _id to id
-            date: new Date(response.data.date) 
+            ...updatedTransaction,
+            id: updatedTransaction._id, // Map MongoDB _id to id
+            date: new Date(updatedTransaction.date) 
           } : t
         ),
         isLoading: false

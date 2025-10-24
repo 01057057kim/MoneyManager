@@ -19,7 +19,9 @@ import {
   Filter,
   ArrowUpDown,
   Receipt,
-  CalendarDays
+  CalendarDays,
+  Trash2,
+  Edit
 } from 'lucide-react';
 import { useTransactionStore } from '../../store/transactionStore';
 import { useGroupStore } from '../../store/groupStore';
@@ -41,6 +43,7 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
     fetchTransactions,
     addTransaction,
     updateTransaction,
+    deleteTransaction,
     getFilteredTransactions,
     getStats,
     setFilter,
@@ -90,8 +93,60 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
     setSorting(field, 'asc');
   };
 
+  const handleDeleteTransaction = async (transactionId: string) => {
+    if (window.confirm('Are you sure you want to delete this transaction?')) {
+      try {
+        await deleteTransaction(transactionId);
+        toast.success('Transaction deleted successfully');
+      } catch (error) {
+        toast.error('Failed to delete transaction');
+        console.error('Delete transaction error:', error);
+      }
+    }
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setSelectedTransaction(transaction);
+    setShowTransactionModal(true);
+  };
+
   const filteredTransactions = getFilteredTransactions();
   const stats = getStats();
+
+  // Calendar view helper functions
+  const getTransactionsByDate = () => {
+    const transactionsByDate: { [key: string]: Transaction[] } = {};
+    filteredTransactions.forEach(transaction => {
+      const dateKey = transaction.date.toISOString().split('T')[0];
+      if (!transactionsByDate[dateKey]) {
+        transactionsByDate[dateKey] = [];
+      }
+      transactionsByDate[dateKey].push(transaction);
+    });
+    return transactionsByDate;
+  };
+
+  const getCalendarDays = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    const days = [];
+    const currentDate = new Date(startDate);
+    
+    for (let i = 0; i < 42; i++) {
+      days.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return days;
+  };
+
+  const transactionsByDate = getTransactionsByDate();
+  const calendarDays = getCalendarDays();
 
   return (
     <>
@@ -230,9 +285,10 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
         </Card>
       )}
 
-      {/* Transactions Table */}
-      <Card className="bg-slate-800 border-slate-700">
-        <Table>
+      {/* Transactions Display */}
+      {view === 'list' ? (
+        <Card className="bg-slate-800 border-slate-700">
+          <Table>
           <TableHeader>
             <TableRow>
               <TableHead 
@@ -272,12 +328,13 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
                 </div>
               </TableHead>
               <TableHead className="text-slate-400">Status</TableHead>
+              <TableHead className="text-slate-400">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   <div className="flex items-center justify-center text-slate-400">
                     <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
                       <circle
@@ -300,7 +357,7 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
               </TableRow>
             ) : filteredTransactions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-slate-400">
+                <TableCell colSpan={6} className="text-center py-8 text-slate-400">
                   No transactions found
                 </TableCell>
               </TableRow>
@@ -308,11 +365,7 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
               filteredTransactions.map((transaction) => (
                 <TableRow 
                   key={transaction.id}
-                  className="cursor-pointer hover:bg-slate-700/50"
-                  onClick={() => {
-                    setSelectedTransaction(transaction);
-                    setShowTransactionModal(true);
-                  }}
+                  className="hover:bg-slate-700/50"
                 >
                   <TableCell className="text-slate-300">
                     {transaction.date.toLocaleDateString()}
@@ -340,12 +393,98 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
                       {transaction.status}
                     </span>
                   </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditTransaction(transaction);
+                        }}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteTransaction(transaction.id);
+                        }}
+                        className="h-8 w-8 p-0 text-red-400 hover:text-red-300"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
-      </Card>
+        </Card>
+      ) : (
+        /* Calendar View */
+        <Card className="bg-slate-800 border-slate-700">
+          <div className="p-6">
+            <div className="grid grid-cols-7 gap-1 mb-4">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                <div key={day} className="text-center text-sm font-medium text-slate-400 p-2">
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {calendarDays.map((day, index) => {
+                const dateKey = day.toISOString().split('T')[0];
+                const dayTransactions = transactionsByDate[dateKey] || [];
+                const isCurrentMonth = day.getMonth() === new Date().getMonth();
+                const isToday = day.toDateString() === new Date().toDateString();
+                
+                return (
+                  <div
+                    key={index}
+                    className={`min-h-[100px] p-2 border border-slate-700 rounded-lg ${
+                      isCurrentMonth ? 'bg-slate-800' : 'bg-slate-900/50'
+                    } ${isToday ? 'ring-2 ring-blue-500' : ''}`}
+                  >
+                    <div className={`text-sm font-medium mb-1 ${
+                      isCurrentMonth ? 'text-white' : 'text-slate-500'
+                    } ${isToday ? 'text-blue-400' : ''}`}>
+                      {day.getDate()}
+                    </div>
+                    <div className="space-y-1">
+                      {dayTransactions.slice(0, 3).map((transaction, idx) => (
+                        <div
+                          key={idx}
+                          className={`text-xs p-1 rounded cursor-pointer hover:bg-slate-700 ${
+                            transaction.type === 'income' 
+                              ? 'bg-green-500/20 text-green-300' 
+                              : 'bg-red-500/20 text-red-300'
+                          }`}
+                          onClick={() => handleEditTransaction(transaction)}
+                        >
+                          <div className="truncate">{transaction.description}</div>
+                          <div className="font-medium">
+                            {transaction.type === 'income' ? '+' : '-'}${transaction.amount}
+                          </div>
+                        </div>
+                      ))}
+                      {dayTransactions.length > 3 && (
+                        <div className="text-xs text-slate-400">
+                          +{dayTransactions.length - 3} more
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Transaction Modal */}
       {showTransactionModal && (

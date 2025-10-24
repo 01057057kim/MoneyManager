@@ -12,7 +12,10 @@ const getTransactions = async (req, res) => {
     // Check if user has access to group
     const group = await Group.findOne({
       _id: groupId,
-      'members.user': req.user._id
+      $or: [
+        { owner: req.user._id },
+        { 'members.user': req.user._id }
+      ]
     });
 
     if (!group) {
@@ -45,7 +48,7 @@ const getTransactions = async (req, res) => {
 // @route   POST /api/transactions
 // @access  Private
 const createTransaction = async (req, res) => {
-  try {
+  try { 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
@@ -54,12 +57,15 @@ const createTransaction = async (req, res) => {
       });
     }
 
-    const { description, amount, type, category, status, groupId } = req.body;
+    const { description, amount, type, category, status, groupId, payer} = req.body;
 
     // Check if user has access to group
     const group = await Group.findOne({
       _id: groupId,
-      'members.user': req.user._id
+      $or: [
+        { owner: req.user._id },
+        { 'members.user': req.user._id }
+      ]
     });
 
     if (!group) {
@@ -73,7 +79,8 @@ const createTransaction = async (req, res) => {
       category,
       status,
       group: groupId,
-      createdBy: req.user._id
+      createdBy: req.user._id,
+      payer: payer || req.user._id,
     });
 
     // Format response
@@ -85,13 +92,19 @@ const createTransaction = async (req, res) => {
       amount: transaction.amount,
       type: transaction.type,
       status: transaction.status,
-      groupId: transaction.group
+      groupId: transaction.group,
+      payer: transaction.payer
     };
 
     res.status(201).json(formattedTransaction);
   } catch (error) {
     console.error('Create transaction error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error details:', error.message); // Add this
+    console.error('Request body:', req.body); // Add this
+    res.status(500).json({ 
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
   }
 };
 
@@ -111,7 +124,10 @@ const updateTransaction = async (req, res) => {
     // Check if user has access to group
     const group = await Group.findOne({
       _id: transaction.group,
-      'members.user': req.user._id
+      $or: [
+        { owner: req.user._id },
+        { 'members.user': req.user._id }
+      ]
     });
 
     if (!group) {
@@ -161,14 +177,17 @@ const deleteTransaction = async (req, res) => {
     // Check if user has access to group
     const group = await Group.findOne({
       _id: transaction.group,
-      'members.user': req.user._id
+      $or: [
+        { owner: req.user._id },
+        { 'members.user': req.user._id }
+      ]
     });
 
     if (!group) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
-    await transaction.remove();
+    await Transaction.findByIdAndDelete(id);
     res.json({ message: 'Transaction deleted successfully' });
   } catch (error) {
     console.error('Delete transaction error:', error);

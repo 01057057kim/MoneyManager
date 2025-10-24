@@ -10,6 +10,10 @@ import Groups from './pages/Groups';
 import ProtectedRoute from './components/ProtectedRoute';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { TransactionsSection } from './components/sections/TransactionsSection';
+import BudgetsSection from './components/sections/BudgetsSection';
+import RecurringSection from './components/sections/RecurringSection';
+import CategoriesSection from './components/sections/CategoriesSection';
+import ReportsSection from './components/sections/ReportsSection';
 
 export default function App() {
   return (
@@ -60,7 +64,40 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DashboardLayout>
-                <div className="text-white">Budgets Page (Coming Soon)</div>
+                <BudgetsSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/recurring"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <RecurringSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <CategoriesSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ReportsSection />
               </DashboardLayout>
             </ProtectedRoute>
           }

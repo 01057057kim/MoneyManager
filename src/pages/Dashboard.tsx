@@ -3,17 +3,34 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { Progress } from '../components/ui/progress';
 import { useGroupStore } from '../store/groupStore';
 import { useAuthStore } from '../store/authStore';
+import { useTransactionStore } from '../store/transactionStore';
+import { useBudgetStore } from '../store/budgetStore';
+import { useRecurringStore } from '../store/recurringStore';
+import { useCategoryStore } from '../store/categoryStore';
 import OverviewSection from '../components/sections/OverviewSection';
 import GroupsSection from '../components/sections/GroupsSection';
 import { TransactionsSection } from '../components/sections/TransactionsSection';
 import BudgetsSection from '../components/sections/BudgetsSection';
+import RecurringSection from '../components/sections/RecurringSection';
+import CategoriesSection from '../components/sections/CategoriesSection';
+import ReportsSection from '../components/sections/ReportsSection';
 import { 
   Plus, 
   Key, 
   Building2, 
-  Loader2
+  Loader2,
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  AlertTriangle,
+  Calendar,
+  BarChart3,
+  PiggyBank,
+  Repeat
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -31,10 +48,54 @@ const Dashboard = () => {
 
   const { user } = useAuthStore();
   const { activeGroup, isLoading, fetchGroups, createGroup, joinGroup } = useGroupStore();
+  
+  // Finance data stores
+  const { 
+    transactions, 
+    getStats, 
+    fetchTransactions 
+  } = useTransactionStore();
+  
+  const { 
+    budgets, 
+    fetchBudgets 
+  } = useBudgetStore();
+  
+  const { 
+    recurringTransactions, 
+    dueTransactions, 
+    fetchRecurringTransactions, 
+    fetchDueTransactions 
+  } = useRecurringStore();
+  
+  const { 
+    categories, 
+    fetchCategories 
+  } = useCategoryStore();
 
   useEffect(() => {
     fetchGroups();
   }, [fetchGroups]);
+
+  // Load finance data when active group changes
+  useEffect(() => {
+    const loadFinanceData = async () => {
+      if (activeGroup) {
+        try {
+          await Promise.all([
+            fetchTransactions(activeGroup.id),
+            fetchBudgets(activeGroup.id),
+            fetchRecurringTransactions(activeGroup.id),
+            fetchDueTransactions(activeGroup.id),
+            fetchCategories(activeGroup.id)
+          ]);
+        } catch (error) {
+          console.error('Error loading finance data:', error);
+        }
+      }
+    };
+    loadFinanceData();
+  }, [activeGroup, fetchTransactions, fetchBudgets, fetchRecurringTransactions, fetchDueTransactions, fetchCategories]);
 
   useEffect(() => {
     const handleSectionChange = (event: CustomEvent<{ section: string }>) => {
@@ -145,10 +206,185 @@ const Dashboard = () => {
         ) : (
           <div>
             {/* Section Content */}
-            {activeSection === 'overview' && activeGroup && <OverviewSection />}
+            {activeSection === 'overview' && activeGroup && (
+              <div className="space-y-6">
+                {/* Finance Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="p-4 bg-slate-800 border-slate-700">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-green-500/10 rounded-full">
+                        <TrendingUp className="h-5 w-5 text-green-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">Total Income</p>
+                        <p className="text-lg font-semibold text-white">
+                          ${getStats().totalIncome.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-4 bg-slate-800 border-slate-700">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-red-500/10 rounded-full">
+                        <TrendingDown className="h-5 w-5 text-red-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">Total Expenses</p>
+                        <p className="text-lg font-semibold text-white">
+                          ${getStats().totalExpenses.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-4 bg-slate-800 border-slate-700">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-blue-500/10 rounded-full">
+                        <DollarSign className="h-5 w-5 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">Net Amount</p>
+                        <p className={`text-lg font-semibold ${
+                          getStats().netAmount >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          ${getStats().netAmount.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-4 bg-slate-800 border-slate-700">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 bg-purple-500/10 rounded-full">
+                        <Calendar className="h-5 w-5 text-purple-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-slate-400">Transactions</p>
+                        <p className="text-lg font-semibold text-white">
+                          {Array.isArray(transactions) ? transactions.length : 0}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Budget Status */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="p-6 bg-slate-800 border-slate-700">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <PiggyBank className="h-5 w-5 text-blue-500" />
+                      <h3 className="text-lg font-semibold text-white">Budget Status</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {(Array.isArray(budgets) ? budgets : []).slice(0, 3).map((budget) => {
+                        const percentage = budget.percentageUsed || 0;
+                        const status = percentage >= 100 ? 'exceeded' : percentage >= 90 ? 'critical' : percentage >= 75 ? 'warning' : 'safe';
+                        return (
+                          <div key={budget._id} className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-300">{budget.name}</span>
+                              <span className={`text-sm ${
+                                status === 'exceeded' ? 'text-red-400' :
+                                status === 'critical' ? 'text-orange-400' :
+                                status === 'warning' ? 'text-yellow-400' : 'text-green-400'
+                              }`}>
+                                {status.toUpperCase()}
+                              </span>
+                            </div>
+                            <Progress value={percentage} className="h-2" />
+                            <div className="flex justify-between text-sm text-slate-400">
+                              <span>${(budget.spent || 0).toLocaleString()} / ${budget.limit.toLocaleString()}</span>
+                              <span>{percentage.toFixed(1)}%</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Card>
+
+                  <Card className="p-6 bg-slate-800 border-slate-700">
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Repeat className="h-5 w-5 text-green-500" />
+                      <h3 className="text-lg font-semibold text-white">Recurring Transactions</h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Active Recurring</span>
+                        <span className="text-white">{recurringTransactions.filter(t => t.isActive).length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Due Today</span>
+                        <span className="text-orange-400">{dueTransactions.length}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Total Categories</span>
+                        <span className="text-white">{categories.length}</span>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Alerts */}
+                {Array.isArray(budgets) && budgets.some(b => b.status === 'exceeded' || b.status === 'critical') && (
+                  <Card className="p-4 bg-slate-800 border-slate-700">
+                    <div className="flex items-center space-x-3">
+                      <AlertTriangle className="h-5 w-5 text-orange-400" />
+                      <div>
+                        <h4 className="text-orange-400 font-medium">Budget Alerts</h4>
+                        <p className="text-sm text-slate-400">
+                          {Array.isArray(budgets) ? budgets.filter(b => b.status === 'exceeded').length : 0} budgets exceeded, {' '}
+                          {Array.isArray(budgets) ? budgets.filter(b => b.status === 'critical').length : 0} at critical level
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Quick Actions */}
+                <Card className="p-6 bg-slate-800 border-slate-700">
+                  <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Button 
+                      className="h-20 flex-col space-y-2 bg-slate-700 hover:bg-slate-600"
+                      onClick={() => setActiveSection('transactions')}
+                    >
+                      <Calendar className="h-6 w-6" />
+                      <span>Add Transaction</span>
+                    </Button>
+                    <Button 
+                      className="h-20 flex-col space-y-2 bg-slate-700 hover:bg-slate-600"
+                      onClick={() => setActiveSection('budgets')}
+                    >
+                      <Target className="h-6 w-6" />
+                      <span>Manage Budgets</span>
+                    </Button>
+                    <Button 
+                      className="h-20 flex-col space-y-2 bg-slate-700 hover:bg-slate-600"
+                      onClick={() => setActiveSection('recurring')}
+                    >
+                      <Repeat className="h-6 w-6" />
+                      <span>Recurring</span>
+                    </Button>
+                    <Button 
+                      className="h-20 flex-col space-y-2 bg-slate-700 hover:bg-slate-600"
+                      onClick={() => setActiveSection('reports')}
+                    >
+                      <BarChart3 className="h-6 w-6" />
+                      <span>Reports</span>
+                    </Button>
+                  </div>
+                </Card>
+
+                <OverviewSection />
+              </div>
+            )}
             {activeSection === 'groups' && <GroupsSection />}
             {activeSection === 'transactions' && activeGroup && <TransactionsSection />}
             {activeSection === 'budgets' && activeGroup && <BudgetsSection />}
+            {activeSection === 'recurring' && activeGroup && <RecurringSection />}
+            {activeSection === 'categories' && activeGroup && <CategoriesSection />}
+            {activeSection === 'reports' && activeGroup && <ReportsSection />}
           </div>
         )}
       </div>
