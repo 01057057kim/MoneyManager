@@ -1,4 +1,4 @@
-# Money Manager
+# Money Manager (Currently under development)
 
 A comprehensive financial, time, and productivity platform built with the MERN stack. This application allows users to track income, expenses, budgets, tasks, and clients within unified group workspaces.
 
@@ -175,6 +175,3 @@ This is Step 1 of the Money Manager application. Future steps will include:
 - Client relationship management
 - Advanced analytics and reporting
 
-## License
-
-This project is licensed under the MIT License.
