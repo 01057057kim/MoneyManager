@@ -12,7 +12,8 @@ dist
 dist-ssr
 *.local
 .env
-
+TEST_RESULTS_SUMMARY.md
+TESTING_GUIDE.md
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
