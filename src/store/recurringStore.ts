@@ -55,6 +55,7 @@ export interface RecurringTransactionFormData {
   }>;
   notes?: string;
   client?: string;
+  isActive?: boolean;
 }
 
 interface RecurringStore {
@@ -67,7 +68,7 @@ interface RecurringStore {
   fetchRecurringTransactions: (groupId?: string) => Promise<void>;
   fetchDueTransactions: (groupId?: string) => Promise<void>;
   createRecurringTransaction: (data: RecurringTransactionFormData) => Promise<RecurringTransaction>;
-  updateRecurringTransaction: (id: string, data: Partial<RecurringTransactionFormData>) => Promise<RecurringTransaction>;
+  updateRecurringTransaction: (id: string, data: Partial<RecurringTransactionFormData & { isActive?: boolean }>) => Promise<RecurringTransaction>;
   deleteRecurringTransaction: (id: string) => Promise<void>;
   executeRecurringTransaction: (id: string) => Promise<void>;
   setError: (error: string | null) => void;
@@ -133,7 +134,7 @@ export const useRecurringStore = create<RecurringStore>((set, get) => ({
     }
   },
 
-  updateRecurringTransaction: async (id: string, data: Partial<RecurringTransactionFormData>) => {
+  updateRecurringTransaction: async (id: string, data: Partial<RecurringTransactionFormData & { isActive?: boolean }>) => {
     set({ isLoading: true, error: null });
     try {
       const response = await api.put(`/recurring/${id}`, data);

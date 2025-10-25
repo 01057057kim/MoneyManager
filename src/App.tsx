@@ -8,17 +8,27 @@ import Dashboard from './pages/Dashboard';
 import GroupDashboard from './pages/GroupDashboard';
 import Groups from './pages/Groups';
 import ProtectedRoute from './components/ProtectedRoute';
+import AuthProvider from './components/AuthProvider';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { TransactionsSection } from './components/sections/TransactionsSection';
 import BudgetsSection from './components/sections/BudgetsSection';
 import RecurringSection from './components/sections/RecurringSection';
 import CategoriesSection from './components/sections/CategoriesSection';
 import ReportsSection from './components/sections/ReportsSection';
+import ClientsSection from './components/sections/ClientsSection';
+import ProjectsSection from './components/sections/ProjectsSection';
+import InvoicesSection from './components/sections/InvoicesSection';
+import TasksSection from './components/sections/TasksSection';
+import CalendarSection from './components/sections/CalendarSection';
+import FinancialGoalsSection from './components/sections/FinancialGoalsSection';
+import DocumentsSection from './components/sections/DocumentsSection';
+import SettingsSection from './components/sections/SettingsSection';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Navigate to="/landing" replace />} />
         <Route path="/landing" element={<Landing />} />
@@ -108,7 +118,7 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DashboardLayout>
-                <div className="text-white">Tasks Page (Coming Soon)</div>
+                <TasksSection />
               </DashboardLayout>
             </ProtectedRoute>
           }
@@ -119,7 +129,40 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DashboardLayout>
-                <div className="text-white">Calendar Page (Coming Soon)</div>
+                <CalendarSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/goals"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <FinancialGoalsSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <DocumentsSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <SettingsSection />
               </DashboardLayout>
             </ProtectedRoute>
           }
@@ -130,7 +173,29 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DashboardLayout>
-                <div className="text-white">Clients Page (Coming Soon)</div>
+                <ClientsSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/projects"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ProjectsSection />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/invoices"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <InvoicesSection />
               </DashboardLayout>
             </ProtectedRoute>
           }
@@ -168,7 +233,8 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

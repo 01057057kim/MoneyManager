@@ -47,8 +47,8 @@ const Sidebar = () => {
     {
       section: 'Business',
       items: [
-        { path: '/invoices', label: 'Invoices', icon: FileText },
         { path: '/clients', label: 'Clients', icon: Users },
+        { path: '/invoices', label: 'Invoices', icon: FileText },
         { path: '/projects', label: 'Projects', icon: Briefcase },
       ]
     },

@@ -57,7 +57,7 @@ const CategoriesSection: React.FC<CategoriesSectionProps> = () => {
       }
     };
     loadCategories();
-  }, [activeGroup, fetchCategories]);
+  }, [activeGroup?.id]); // Only depend on activeGroup.id, not the function
 
   const handleCreateCategory = () => {
     setSelectedCategory(undefined);

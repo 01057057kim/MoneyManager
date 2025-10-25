@@ -114,7 +114,13 @@ export const useCategoryStore = create<CategoryStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       await api.post('/categories', data);
-      set({ isLoading: false });
+      // Refresh categories after creating a new one
+      const params = new URLSearchParams();
+      if (data.groupId) params.append('groupId', data.groupId);
+      
+      const response = await api.get(`/categories?${params.toString()}`);
+      const categories = response.data?.data || response.data || [];
+      set({ categories, isLoading: false });
     } catch (error: any) {
       set({ 
         error: error.response?.data?.error || 'Failed to create category',

@@ -61,7 +61,7 @@ const RecurringSection: React.FC<RecurringSectionProps> = () => {
       }
     };
     loadData();
-  }, [activeGroup, fetchRecurringTransactions, fetchDueTransactions]);
+  }, [activeGroup?.id]); // Only depend on activeGroup.id, not the functions
 
   const handleCreateTransaction = () => {
     setSelectedTransaction(undefined);
@@ -90,6 +90,16 @@ const RecurringSection: React.FC<RecurringSectionProps> = () => {
       toast.success('Recurring transaction executed successfully');
     } catch (error) {
       toast.error('Failed to execute recurring transaction');
+    }
+  };
+
+  const handleToggleStatus = async (transaction: RecurringTransaction) => {
+    try {
+      const newStatus = !transaction.isActive;
+      await updateRecurringTransaction(transaction._id, { isActive: newStatus } as any);
+      toast.success(`Recurring transaction ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    } catch (error) {
+      toast.error('Failed to update transaction status');
     }
   };
 
@@ -151,6 +161,12 @@ const RecurringSection: React.FC<RecurringSectionProps> = () => {
     if (!transaction.isActive) return 'Inactive';
     if (transaction.endDate && new Date(transaction.endDate) < new Date()) return 'Expired';
     return 'Active';
+  };
+
+  const getStatusIcon = (transaction: RecurringTransaction) => {
+    if (!transaction.isActive) return <Pause className="h-4 w-4" />;
+    if (transaction.endDate && new Date(transaction.endDate) < new Date()) return <Clock className="h-4 w-4" />;
+    return <Play className="h-4 w-4" />;
   };
 
   return (
@@ -294,9 +310,12 @@ const RecurringSection: React.FC<RecurringSectionProps> = () => {
                     {transaction.nextOccurrence ? formatDate(transaction.nextOccurrence) : 'N/A'}
                   </TableCell>
                   <TableCell>
-                    <span className={`text-sm ${getStatusColor(transaction)}`}>
-                      {getStatusText(transaction)}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      {getStatusIcon(transaction)}
+                      <span className={`text-sm ${getStatusColor(transaction)}`}>
+                        {getStatusText(transaction)}
+                      </span>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
@@ -306,6 +325,7 @@ const RecurringSection: React.FC<RecurringSectionProps> = () => {
                           variant="outline"
                           onClick={() => handleExecuteTransaction(transaction._id)}
                           className="h-8 w-8 p-0"
+                          title="Execute now"
                         >
                           <Play className="h-4 w-4" />
                         </Button>
@@ -313,8 +333,22 @@ const RecurringSection: React.FC<RecurringSectionProps> = () => {
                       <Button
                         size="sm"
                         variant="outline"
+                        onClick={() => handleToggleStatus(transaction)}
+                        className={`h-8 w-8 p-0 ${
+                          transaction.isActive 
+                            ? 'text-orange-400 hover:text-orange-300' 
+                            : 'text-green-400 hover:text-green-300'
+                        }`}
+                        title={transaction.isActive ? 'Deactivate' : 'Activate'}
+                      >
+                        {transaction.isActive ? <Pause className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => handleEditTransaction(transaction)}
                         className="h-8 w-8 p-0"
+                        title="Edit"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -323,6 +357,7 @@ const RecurringSection: React.FC<RecurringSectionProps> = () => {
                         variant="outline"
                         onClick={() => handleDeleteTransaction(transaction._id)}
                         className="h-8 w-8 p-0 text-red-400 hover:text-red-300"
+                        title="Delete"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

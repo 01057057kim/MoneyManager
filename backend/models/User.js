@@ -20,6 +20,81 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters']
+  },
+  phone: {
+    type: String,
+    trim: true
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  company: {
+    type: String,
+    trim: true
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationCode: {
+    type: String
+  },
+  emailVerificationExpires: {
+    type: Date
+  },
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  twoFactorCode: {
+    type: String
+  },
+  twoFactorCodeExpires: {
+    type: Date
+  },
+  notificationSettings: {
+    emailNotifications: {
+      type: Boolean,
+      default: true
+    },
+    budgetAlerts: {
+      type: Boolean,
+      default: true
+    },
+    taskReminders: {
+      type: Boolean,
+      default: true
+    },
+    weeklyReports: {
+      type: Boolean,
+      default: true
+    },
+    monthlyReports: {
+      type: Boolean,
+      default: true
+    }
+  },
+  appearanceSettings: {
+    theme: {
+      type: String,
+      enum: ['dark', 'light', 'auto'],
+      default: 'dark'
+    },
+    language: {
+      type: String,
+      enum: ['en', 'es', 'fr', 'de'],
+      default: 'en'
+    },
+    dateFormat: {
+      type: String,
+      enum: ['MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD'],
+      default: 'MM/DD/YYYY'
+    },
+    timezone: {
+      type: String,
+      default: 'UTC'
+    }
   }
 }, {
   timestamps: true

@@ -44,7 +44,11 @@ app.use('/api/budgets', require('./routes/budgets'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/tasks', require('./routes/tasks'));
 app.use('/api/clients', require('./routes/clients'));
+app.use('/api/projects', require('./routes/projects'));
+app.use('/api/invoices', require('./routes/invoices'));
 app.use('/api/recurring', require('./routes/recurring'));
+app.use('/api/documents', require('./routes/documents'));
+app.use('/api/settings', require('./routes/settings'));
 
 // Health check
 app.get('/api/health', (req, res) => {

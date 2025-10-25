@@ -9,6 +9,9 @@ import {
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
+import { useCategoryStore } from '../../store/categoryStore';
+import { useGroupStore } from '../../store/groupStore';
+import { useEffect } from 'react';
 import type { Transaction } from '../../store/transactionStore';
 
 export interface TransactionFormData {
@@ -34,15 +37,25 @@ export function TransactionModal({
   const { register, handleSubmit, formState: { errors } } = useForm<TransactionFormData>({
     defaultValues: transaction ? {
       ...transaction,
-      date: transaction.date.toISOString().split('T')[0],
+      date: transaction.date.toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
     } : {
       type: 'expense',
       status: 'completed',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
     }
   });
 
-  const categories = ['Food', 'Transport', 'Entertainment', 'Bills', 'Income', 'Other'];
+  const { categories, fetchCategories } = useCategoryStore();
+  const { activeGroup } = useGroupStore();
+
+  // Fetch categories when modal opens
+  useEffect(() => {
+    if (activeGroup?.id) {
+      fetchCategories(activeGroup.id);
+    } else {
+      fetchCategories();
+    }
+  }, [activeGroup?.id, fetchCategories]);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -76,8 +89,9 @@ export function TransactionModal({
                 className="w-full p-2 bg-slate-700 border border-slate-600 text-white rounded-md"
                 {...register('category', { required: true })}
               >
+                <option value="">Select a category</option>
                 {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category.name} value={category.name}>{category.name}</option>
                 ))}
               </select>
             </div>

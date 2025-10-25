@@ -7,7 +7,9 @@ const {
   updateMemberRole,
   removeMember,
   updateGroup,
-  regenerateInviteKey
+  regenerateInviteKey,
+  deleteGroup,
+  leaveGroup
 } = require('../controllers/groupController');
 const auth = require('../middleware/auth');
 const { checkGroupRole } = require('../middleware/groupAuth');
@@ -74,6 +76,13 @@ router.post('/:groupId/regenerate-key',
   regenerateInviteKey
 );
 
+// Delete group (Owner only)
+router.delete('/:groupId', 
+  auth, 
+  checkGroupRole(['Owner']), 
+  deleteGroup
+);
+
 // Member management (Owner only)
 router.put('/:groupId/members/:userId/role', 
   auth, 
@@ -94,6 +103,11 @@ router.delete('/:groupId/members/:userId',
   checkGroupRole(['Owner']), 
   removeMember
 );
+
+// @route   POST /api/groups/:id/leave
+// @desc    Leave group
+// @access  Private
+router.post('/:id/leave', auth, leaveGroup);
 
 // @route   GET /api/groups/my-groups
 // @desc    Get user's groups

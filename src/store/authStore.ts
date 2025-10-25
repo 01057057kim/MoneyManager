@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { User, AuthResponse } from '../types';
 import api from '../lib/api';
-import { setAuthData, clearAuthData, getAuthData } from '../lib/auth';
+import { setAuthData, clearAuthData, getAuthData, isAuthenticated, updateLastActivity } from '../lib/auth';
 
 interface AuthState {
   user: User | null;
@@ -10,7 +10,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
-  checkAuth: () => void;
+  checkAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -60,10 +60,32 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, isAuthenticated: false });
   },
 
-  checkAuth: () => {
-    const { token, user } = getAuthData();
-    if (token && user) {
-      set({ user, isAuthenticated: true });
+  checkAuth: async () => {
+    console.log('AuthStore - checkAuth called');
+    set({ isLoading: true });
+    try {
+      const authResult = isAuthenticated();
+      console.log('AuthStore - isAuthenticated result:', authResult);
+      
+      if (authResult) {
+        const { user } = getAuthData();
+        console.log('AuthStore - user data:', user);
+        if (user) {
+          set({ user, isAuthenticated: true, isLoading: false });
+          console.log('AuthStore - user authenticated successfully');
+          // Update last activity when checking auth
+          updateLastActivity();
+        } else {
+          console.log('AuthStore - no user data found');
+          set({ user: null, isAuthenticated: false, isLoading: false });
+        }
+      } else {
+        console.log('AuthStore - not authenticated');
+        set({ user: null, isAuthenticated: false, isLoading: false });
+      }
+    } catch (error) {
+      console.error('AuthStore - auth check error:', error);
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 }));

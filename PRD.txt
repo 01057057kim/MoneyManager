@@ -1,0 +1,301 @@
+Unified Financial, Time, and Productivity Platform
+
+This web application is a complete money management, time management, and financial collaboration platform. It allows users to track income, expenses, budgets, tasks, and clients within one unified space. Every user creates an account and operates inside a group structure. A group can represent a household, a business, a team, or even a solo workspace. Each group has its own settings such as currency and tax rate, and the group owner can invite others using a unique key. Members can view or edit data depending on their assigned role.
+
+Financial Tracking & Collaboration
+
+Inside a group, users can record every financial activity, including expenses, income, invoices, and settlements. Each transaction includes the amount, payer, category, notes, date, and optional receipt upload. The system automatically calculates total balances, category breakdowns, and overall cash flow. For shared expenses, it identifies who paid, who participated, and who owes whom, ensuring that financial relationships stay transparent.
+
+Productivity and Time Management
+
+To support holistic group coordination, the platform integrates Productivity and Time Management tools directly into the workspace:
+
+Group To-Do List (Productivity): The shared task management system allows the group to create, assign, and track responsibilities for any member, ensuring accountability for collective goals. Tasks can be directly linked to financial items (e.g., "Pay Rent," "Send Invoice to Client X"), automatically pulling in relevant due dates and amounts from the financial system. Users receive alerts for overdue or high-priority items.
+
+Shared Calendar (Time Management): This serves as the central hub for all scheduled activities. The calendar automatically populates with key financial deadlines, including recurring expense dates, invoice due dates from the CRM, and budget review reminders. Members can also use it to schedule general group appointments, meetings, or shared household events, providing everyone with a transparent view of the group's collective schedule and financial commitments, similar to a Google Calendar experience.
+
+Budgeting and Cash Flow
+
+The budgeting system lets users or groups define spending limits over time—such as weekly or monthly budgets—and shows clear visual indicators when the group approaches or exceeds its limit. It can also manage recurring expenses like rent, subscriptions, or invoices without requiring the user to re-enter them each time. A live dashboard summarizes all this information with charts and reports, giving an instant picture of spending, income, and financial health.
+
+Client Relationship Management (CRM)
+
+The CRM component extends the app beyond personal finance into business use. Users can store client information, record deals, link invoices or payments to specific clients, and see which invoices are pending or paid. This transforms the app into a lightweight accounting and customer management tool suitable for freelancers or small businesses.
+
+Everything in the system—transactions, budgets, clients, tasks, and reports—belongs to the group workspace, making collaboration simple and organized. Multiple people can work together to manage shared finances and tasks while maintaining permission controls and data integrity. The overall experience is meant to replace messy spreadsheets and disconnected tools with a single, clear, and reliable platform for handling both personal and shared money and time.
+
+---------------------------------------------------------
+Product Requirements Document
+
+Product Name: Money Manager (placeholder)
+
+1. Purpose
+
+The application provides a single online space where people can understand, plan, and share their finances and their time. It is designed for individuals, families, freelancers, and small teams who need to record expenses and income, manage budgets, track recurring costs, coordinate tasks, and maintain client relationships. The goal is to replace spreadsheets, messaging threads, and scattered invoices with one clear, collaborative dashboard.
+
+2. Product Vision
+
+To make money management and group coordination transparent and collaborative. Every user should be able to open the app and instantly see where the money comes from, where it goes, and what needs attention — without confusion or duplication. The product will feel equally natural for personal budgeting, shared financial work, and collective time management.
+
+3. Core Users
+
+Solo users who want private budgeting.
+Households and friend groups who share expenses.
+Freelancers or small businesses who track clients and invoices.
+Teams managing shared budgets, project costs, and group tasks.
+
+4. Key Features
+
+The system begins with authentication. Each user must have an account and must belong to a group. A group is the workspace containing all financial data. A user can create a new group or join an existing one through a unique invite key. Groups define their base currency, tax rate, and member roles: Owner, Editor, or Viewer.
+
+Inside a group, users can record transactions. Each entry contains the title, amount, category, payer, participants, date, optional notes, and a receipt upload. The system automatically aggregates totals, category distributions, and personal balances. Users can filter and export their data.
+
+Budgets allow the group or individual to define spending limits for specific categories or time frames. The interface shows live progress toward those limits and signals when a category nears its cap. Recurring expenses or incomes can be created for predictable payments like rent, salaries, or subscriptions.
+
+Productivity & Time Management
+
+Group To-Do List (Productivity): The system provides a shared task management area where users can create, assign, and track responsibilities for any group member. Tasks include fields for title, due date, priority level, and assignee. Tasks can be directly linked to financial records (e.g., invoices or recurring expenses) to maintain integrated reminders and accountability.
+
+Shared Calendar (Time Management): This calendar acts as the central hub for all scheduled group activities. It automatically populates with key financial deadlines, including recurring expense dates, invoice due dates from the CRM, and budget review reminders. Members can also add general group appointments, meetings, or shared household events, providing everyone with a transparent view of the group's collective schedule and financial commitments.
+
+The CRM component stores client information, tracks deals or invoices, and links those records to related transactions. It allows freelancers and teams to view which clients owe money, which invoices are pending, and which have been settled.
+
+A central dashboard summarizes all information through graphs, key metrics, and alerts. Users can instantly read their cash flow, top spending categories, remaining budgets, and upcoming obligations. The dashboard also highlights overdue tasks and upcoming calendar deadlines.
+
+Settings let users update profile information, change the group’s currency or tax rate, and export financial data in CSV or PDF format.
+
+5. User Experience
+
+The design is clean and minimal. A user signs in and lands directly on the dashboard. Navigation leads to Transactions, Budgets, Tasks, Calendar, Clients, and Settings. Data entry forms are short, with smart defaults to reduce friction. Charts and summaries update in real time. Group collaboration feels seamless; members see shared data without needing external communication tools.
+
+6. Success Criteria
+
+The product is successful when users can:
+
+Record and categorize financial activity easily.
+
+See an accurate picture of budgets and balances at any moment.
+
+Collaborate within a group without losing clarity or security.
+
+Manage client relationships and invoices from the same interface.
+
+Manage, assign, and track collaborative tasks efficiently.
+
+Maintain a unified view of group financial deadlines and general schedules.
+
+Export and preserve their data confidently.
+
+7. Future Expansion
+
+Later versions can add real-time notifications, debt-settlement algorithms, AI-based expense categorization, or integrations with banking APIs. The first version focuses on clarity, reliability, and simple collaboration.
+
+------------------------------------
+
+High-Level Phases
+
+Foundation and Access
+Start with the parts that let people in and make data belong to them.
+
+Authentication (login, register, logout).
+
+Basic user profile storage.
+
+JWT or session system fully working before you even touch the dashboard.
+You can test everything else locally using mock data once this exists.
+
+Group Structure
+After users exist, give them a home.
+
+Group creation page and database model.
+
+Invite key generation.
+
+Join-group flow and role assignment (Owner, Editor, Viewer).
+
+Permissions logic on the backend so each request knows which group and role it belongs to.
+Once you have this, you can treat every feature as “inside a group.”
+
+Main App Shell / Dashboard
+Build the skeleton that holds everything: sidebar, header, navigation, and empty dashboard page.
+This gives you a single layout so you don’t rebuild it later when features arrive.
+You can show fake totals and charts here until real data connects.
+
+Transactions Module (CRUD)
+Start with the heart of the app: recording money.
+
+Add, edit, delete, and list transactions.
+
+Include category, amount, date, type (income/expense).
+
+Store group ID and user ID on each record.
+
+Show them in a table or list with totals.
+Once this works, you already have a usable financial MVP.
+
+Budgets
+Build category and time-based budgets linked to the transactions.
+
+Create/read/update/delete budgets.
+
+Calculate current spend vs limit.
+
+Add color indicators (green/yellow/red).
+Now the dashboard can start showing real financial insights.
+
+Productivity (Tasks)
+Build the shared to-do list for group accountability.
+
+Task model: title, due date, priority, assignee, completion status.
+
+CRUD endpoints for tasks.
+
+Implement linking tasks to financial records (e.g., recurring expenses).
+
+Build the dedicated Tasks page view.
+
+CRM / Clients
+Add the client management side.
+
+Client list with name, contact info, notes.
+
+Deals or invoices linked to clients.
+
+Connection between deals and transactions.
+You’ll start seeing the product turn from personal finance into business-capable finance.
+
+Time Management (Calendar)
+Build the central coordination view.
+
+Create the Calendar UI/page.
+
+Integrate display of Task due dates (from Step 6).
+
+Integrate display of Recurring Expense dates (from Step 5).
+
+Integrate display of Invoice/Deal due dates (from Step 7).
+
+Allow adding general group events/appointments.
+
+Reports & Dashboard Integration
+Connect real data to the dashboard and ensure all parts are visible.
+
+Total income, total expenses, current balance.
+
+Category pie chart, time-based bar chart.
+
+Outstanding invoices summary.
+
+Alerts for overdue tasks and upcoming calendar deadlines.
+
+File Uploads & Receipts
+Add Cloudinary or similar for receipt uploads.
+Attach image URLs to transactions.
+Ensure permissions are respected so users can’t view other groups’ uploads.
+
+Settings
+Let users and owners change preferences.
+
+Profile edit (name, email).
+
+Group settings (currency, tax rate).
+
+Export data (CSV/PDF optional).
+
+Landing Page & Public Site
+Now that the product works, build its public face.
+Create a clean landing page that explains what the app does, includes screenshots, pricing (if any), and a “Get Started” button that routes to sign-up.
+
+Polish and Refinement
+Once everything works, focus on styling, responsiveness, and small user-experience touches—loading states, empty-state illustrations, and helpful error messages.
+
+Detailed Technical Steps
+
+Step 1: Set Up the Project
+Initialize the frontend (React + Vite or Next.js) with TailwindCSS.
+Initialize the backend (Node.js + Express) with a MongoDB connection.
+Configure environment variables (DB URI, JWT secret, cloud storage keys).
+Set up basic folder structure: frontend/src, backend/routes, backend/models, backend/controllers.
+
+Step 2: Authentication
+Build register endpoint and page. Store users in MongoDB.
+Build login endpoint and page. Generate JWT tokens.
+Build logout functionality.
+Protect routes so only authenticated users can access app pages.
+Test authentication with Postman or frontend calls.
+
+Step 3: Group Creation & Membership
+Build group model in DB with name, currency, tax rate, owner ID, invite key, and member roles.
+Create a page for creating a new group. Generate a unique invite key.
+Build join group page using invite key.
+Implement roles: Owner, Editor, Viewer. Assign on join.
+Add server-side checks: any route accessing group data must verify the user’s membership and role.
+
+Step 4: App Skeleton / Dashboard
+Build the main app layout: header, sidebar, and content area.
+Create empty pages for: Transactions, Budgets, Tasks, Calendar, CRM, Reports, Settings.
+Add routing between pages.
+Show mock data in the dashboard to visualize layout.
+
+Step 5: Transactions CRUD
+Build transaction model: title, amount, type, category, date, payer, participants, notes, optional receipt.
+Implement backend endpoints: create, read (list), update, delete.
+Build frontend forms and list views.
+Connect transactions to the group: only group members can see them.
+Implement total calculation and basic category breakdowns.
+
+Step 6: Budgets
+Build budget model: category, limit, period, spent.
+CRUD endpoints for budgets.
+Connect budgets to transactions to calculate spent vs. limit.
+Display progress bars on dashboard.
+Optional: alerts when nearing budget limit.
+
+Step 7: Productivity (Tasks)
+Build task model: title, due date, priority, assignee, group ID, linked financial record ID (optional).
+Implement backend endpoints: create, read (list, filtered by assignee/status), update (including completion), delete.
+Build frontend views for task creation and the main list.
+
+Step 8: CRM / Clients
+Build client model: name, email, phone, notes.
+Build deal/invoice model: title, value, status, linked transactions, due date.
+CRUD endpoints for clients and deals.
+Build frontend pages to view clients and deals.
+Connect deals to transactions for revenue tracking.
+
+Step 9: Time Management (Calendar)
+Build the Calendar UI component (month/week view).
+Implement logic to query and display data from three sources:
+
+Recurring Expenses (from Step 6).
+
+Deal/Invoice Due Dates (from Step 8).
+
+Task Due Dates (from Step 7).
+Add CRUD for general group events/appointments.
+
+Step 10: Reports & Dashboard
+Replace mock data in dashboard with real data from transactions, budgets, CRM, and Tasks/Calendar.
+Add charts: total income/expense, category spend, cashflow over time.
+Add summaries for outstanding invoices, upcoming bills, and budgets.
+Add a dedicated section for overdue tasks and next 7-day calendar deadlines.
+Add export option (CSV/PDF).
+
+Step 11: Receipts & File Uploads
+Integrate Cloudinary (or other storage) for receipts.
+Allow uploading images in transaction forms.
+Save receipt URL in transaction record.
+Show receipt thumbnails in the transaction list and detail view.
+
+Step 12: Settings
+User settings: profile edit (name, email, password).
+Group settings: name, currency, tax rate, manage invite keys.
+Member management: list members, assign roles, remove members.
+
+Step 13: Landing Page & Polish
+Create a public landing page explaining the app’s features.
+Include “Sign Up” and “Login” links to app.
+Add mobile responsiveness.
+Add loading states and empty-state illustrations.
+Add helpful error messages for validation or permissions.
+Test flows with multiple users to ensure roles, visibility, and balances work correctly.

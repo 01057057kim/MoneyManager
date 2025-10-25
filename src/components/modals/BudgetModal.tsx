@@ -11,6 +11,8 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { useBudgetStore } from '../../store/budgetStore';
 import { useGroupStore } from '../../store/groupStore';
+import { useCategoryStore } from '../../store/categoryStore';
+import { useEffect } from 'react';
 import type { Budget, BudgetFormData } from '../../store/budgetStore';
 
 interface BudgetModalProps {
@@ -42,7 +44,7 @@ export function BudgetModal({
       category: '',
       limit: 0,
       period: 'monthly',
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
       notifications: {
         enabled: true,
         thresholds: []
@@ -53,19 +55,16 @@ export function BudgetModal({
 
   const { createBudget, updateBudget, isLoading } = useBudgetStore();
   const { activeGroup } = useGroupStore();
+  const { categories, fetchCategories } = useCategoryStore();
 
-  const categories = [
-    'Food & Dining',
-    'Transportation',
-    'Entertainment',
-    'Bills & Utilities',
-    'Shopping',
-    'Healthcare',
-    'Education',
-    'Travel',
-    'Business',
-    'Other'
-  ];
+  // Fetch categories when modal opens
+  useEffect(() => {
+    if (activeGroup?.id) {
+      fetchCategories(activeGroup.id);
+    } else {
+      fetchCategories();
+    }
+  }, [activeGroup?.id, fetchCategories]);
 
   const periods = [
     { value: 'daily', label: 'Daily' },
@@ -168,7 +167,7 @@ export function BudgetModal({
                 >
                   <option value="">Select a category</option>
                   {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
+                    <option key={category.name} value={category.name}>{category.name}</option>
                   ))}
                 </select>
                 {errors.category && (

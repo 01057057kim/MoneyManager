@@ -11,6 +11,8 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { useRecurringStore } from '../../store/recurringStore';
 import { useGroupStore } from '../../store/groupStore';
+import { useCategoryStore } from '../../store/categoryStore';
+import { useEffect } from 'react';
 import type { RecurringTransaction, RecurringTransactionFormData } from '../../store/recurringStore';
 
 interface RecurringTransactionModalProps {
@@ -40,7 +42,7 @@ export function RecurringTransactionModal({
     } : {
       type: 'expense',
       frequency: 'monthly',
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format in local timezone
       group: '',
       payer: '',
       client: ''
@@ -49,19 +51,16 @@ export function RecurringTransactionModal({
 
   const { createRecurringTransaction, updateRecurringTransaction, isLoading } = useRecurringStore();
   const { activeGroup } = useGroupStore();
+  const { categories, fetchCategories } = useCategoryStore();
 
-  const categories = [
-    'Food & Dining',
-    'Transportation',
-    'Entertainment',
-    'Bills & Utilities',
-    'Shopping',
-    'Healthcare',
-    'Education',
-    'Travel',
-    'Business',
-    'Other'
-  ];
+  // Fetch categories when modal opens
+  useEffect(() => {
+    if (activeGroup?.id) {
+      fetchCategories(activeGroup.id);
+    } else {
+      fetchCategories();
+    }
+  }, [activeGroup?.id, fetchCategories]);
 
   const frequencies = [
     { value: 'daily', label: 'Daily' },
@@ -199,7 +198,7 @@ export function RecurringTransactionModal({
                 >
                   <option value="">Select a category</option>
                   {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
+                    <option key={category.name} value={category.name}>{category.name}</option>
                   ))}
                 </select>
                 {errors.category && (

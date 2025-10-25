@@ -295,6 +295,76 @@ const regenerateInviteKey = async (req, res) => {
   }
 };
 
+// @desc    Delete group
+// @route   DELETE /api/groups/:groupId
+// @access  Private (Owner only)
+const deleteGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    
+    const group = await Group.findById(groupId);
+    
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+    
+    // Check if user is the owner
+    if (group.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Only the group owner can delete the group' });
+    }
+    
+    // Delete the group
+    await Group.findByIdAndDelete(groupId);
+    
+    res.json({
+      message: 'Group deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete group error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Leave group
+// @route   POST /api/groups/:id/leave
+// @access  Private
+const leaveGroup = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.user.id;
+
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found' });
+    }
+
+    // Check if user is a member of the group
+    const memberIndex = group.members.findIndex(member => 
+      member.user.toString() === userId
+    );
+
+    if (memberIndex === -1) {
+      return res.status(400).json({ error: 'You are not a member of this group' });
+    }
+
+    const member = group.members[memberIndex];
+
+    // Check if user is the owner
+    if (member.role === 'Owner') {
+      return res.status(400).json({ error: 'Group owners cannot leave the group. Transfer ownership or delete the group instead.' });
+    }
+
+    // Remove the member from the group
+    group.members.splice(memberIndex, 1);
+    await group.save();
+
+    res.json({ message: 'Successfully left the group' });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ error: 'Server Error' });
+  }
+};
+
 module.exports = {
   createGroup,
   joinGroup,
@@ -302,5 +372,7 @@ module.exports = {
   updateMemberRole,
   removeMember,
   updateGroup,
-  regenerateInviteKey
+  regenerateInviteKey,
+  deleteGroup,
+  leaveGroup
 };

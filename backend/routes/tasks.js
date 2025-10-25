@@ -2,18 +2,21 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const auth = require('../middleware/auth');
+const {
+  getTasks,
+  getTask,
+  createTask,
+  updateTask,
+  deleteTask,
+  updateTaskStatus,
+  addComment,
+  updateChecklistItem
+} = require('../controllers/taskController');
 
 // @route   GET /api/tasks
 // @desc    Get all tasks for a group
 // @access  Private
-router.get('/', auth, async (req, res) => {
-  try {
-    // Placeholder - will implement controller
-    res.json({ message: 'Get all tasks' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/', auth, getTasks);
 
 // @route   POST /api/tasks
 // @desc    Create a new task
@@ -22,51 +25,23 @@ router.post('/', [
   auth,
   body('title').trim().notEmpty().withMessage('Task title is required'),
   body('group').notEmpty().withMessage('Group ID is required'),
-  body('priority').isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority level')
-], async (req, res) => {
-  try {
-    // Placeholder - will implement controller
-    res.json({ message: 'Create task' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  body('priority').optional().isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority level')
+], createTask);
 
 // @route   GET /api/tasks/:id
 // @desc    Get a single task
 // @access  Private
-router.get('/:id', auth, async (req, res) => {
-  try {
-    // Placeholder - will implement controller
-    res.json({ message: 'Get task by ID' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get('/:id', auth, getTask);
 
 // @route   PUT /api/tasks/:id
 // @desc    Update a task
 // @access  Private
-router.put('/:id', auth, async (req, res) => {
-  try {
-    // Placeholder - will implement controller
-    res.json({ message: 'Update task' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.put('/:id', auth, updateTask);
 
 // @route   DELETE /api/tasks/:id
 // @desc    Delete a task
 // @access  Private
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    // Placeholder - will implement controller
-    res.json({ message: 'Delete task' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete('/:id', auth, deleteTask);
 
 // @route   PUT /api/tasks/:id/status
 // @desc    Update task status
@@ -74,13 +49,19 @@ router.delete('/:id', auth, async (req, res) => {
 router.put('/:id/status', [
   auth,
   body('status').isIn(['pending', 'in-progress', 'completed', 'cancelled']).withMessage('Invalid status')
-], async (req, res) => {
-  try {
-    // Placeholder - will implement controller
-    res.json({ message: 'Update task status' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+], updateTaskStatus);
+
+// @route   POST /api/tasks/:id/comments
+// @desc    Add comment to task
+// @access  Private
+router.post('/:id/comments', [
+  auth,
+  body('content').trim().notEmpty().withMessage('Comment content is required')
+], addComment);
+
+// @route   PUT /api/tasks/:id/checklist/:itemId
+// @desc    Update checklist item
+// @access  Private
+router.put('/:id/checklist/:itemId', auth, updateChecklistItem);
 
 module.exports = router;

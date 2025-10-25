@@ -1,9 +1,9 @@
 const rateLimit = require('express-rate-limit');
 
-// General API rate limiter
+// General API rate limiter - More generous for dashboard usage
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === 'development' ? 10000 : 1000, // Much higher limit in development
   message: {
     success: false,
     error: 'Too many requests from this IP, please try again later',
@@ -12,8 +12,11 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for health checks
-    return req.path === '/api/health';
+    // Skip rate limiting for health checks and in development for localhost
+    if (req.path === '/api/health') return true;
+    if (process.env.NODE_ENV === 'development' && req.ip === '::1') return true;
+    if (process.env.NODE_ENV === 'development' && req.ip === '127.0.0.1') return true;
+    return false;
   }
 });
 
@@ -43,8 +46,30 @@ const uploadLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// CRUD operations rate limiter - More generous for dashboard operations
+const crudLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 200, // Limit each IP to 200 CRUD operations per minute
+  message: {
+    success: false,
+    error: 'Too many operations, please slow down',
+    timestamp: new Date().toISOString()
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Development bypass - No rate limiting in development
+const devBypass = (req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    return next();
+  }
+  return generalLimiter(req, res, next);
+};
+
 module.exports = {
-  general: generalLimiter,
+  general: process.env.NODE_ENV === 'development' ? devBypass : generalLimiter,
   auth: authLimiter,
-  upload: uploadLimiter
+  upload: uploadLimiter,
+  crud: crudLimiter
 };

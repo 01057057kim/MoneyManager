@@ -52,7 +52,7 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
 
   useEffect(() => {
     const loadTransactions = async () => {
-      if (activeGroup) {
+      if (activeGroup && !isLoading) { // Prevent multiple simultaneous requests
         try {
           await fetchTransactions(activeGroup.id);
         } catch (error) {
@@ -62,7 +62,7 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
       }
     };
     loadTransactions();
-  }, [activeGroup, fetchTransactions]);
+  }, [activeGroup?.id]); // Only depend on activeGroup.id, not the function
 
   const handleTransactionSave = async (formData: TransactionFormData) => {
     try {
@@ -117,7 +117,12 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
   const getTransactionsByDate = () => {
     const transactionsByDate: { [key: string]: Transaction[] } = {};
     filteredTransactions.forEach(transaction => {
-      const dateKey = transaction.date.toISOString().split('T')[0];
+      // Use local date formatting to avoid timezone issues
+      const year = transaction.date.getFullYear();
+      const month = String(transaction.date.getMonth() + 1).padStart(2, '0');
+      const day = String(transaction.date.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
+      
       if (!transactionsByDate[dateKey]) {
         transactionsByDate[dateKey] = [];
       }
@@ -438,7 +443,11 @@ const TransactionsSection: React.FC<TransactionsSectionProps> = () => {
             </div>
             <div className="grid grid-cols-7 gap-1">
               {calendarDays.map((day, index) => {
-                const dateKey = day.toISOString().split('T')[0];
+                // Use local date formatting to avoid timezone issues
+                const year = day.getFullYear();
+                const month = String(day.getMonth() + 1).padStart(2, '0');
+                const dayNum = String(day.getDate()).padStart(2, '0');
+                const dateKey = `${year}-${month}-${dayNum}`;
                 const dayTransactions = transactionsByDate[dateKey] || [];
                 const isCurrentMonth = day.getMonth() === new Date().getMonth();
                 const isToday = day.toDateString() === new Date().toDateString();

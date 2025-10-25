@@ -18,6 +18,7 @@ import { useBudgetStore } from '../../store/budgetStore';
 import { useRecurringStore } from '../../store/recurringStore';
 import { useCategoryStore } from '../../store/categoryStore';
 import { useGroupStore } from '../../store/groupStore';
+import { useTaskStore } from '../../store/taskStore';
 
 interface ReportsSectionProps {}
 
@@ -46,6 +47,13 @@ const ReportsSection: React.FC<ReportsSectionProps> = () => {
     fetchCategories
   } = useCategoryStore();
 
+  const { 
+    tasks,
+    fetchTasks,
+    getTasksByStatus,
+    getOverdueTasks
+  } = useTaskStore();
+
   useEffect(() => {
     const loadData = async () => {
       if (activeGroup) {
@@ -54,7 +62,8 @@ const ReportsSection: React.FC<ReportsSectionProps> = () => {
             fetchTransactions(activeGroup.id),
             fetchBudgets(activeGroup.id),
             fetchRecurringTransactions(activeGroup.id),
-            fetchCategories(activeGroup.id)
+            fetchCategories(activeGroup.id),
+            fetchTasks(activeGroup.id)
           ]);
         } catch (error) {
           console.error('Error loading reports data:', error);
@@ -62,7 +71,7 @@ const ReportsSection: React.FC<ReportsSectionProps> = () => {
       }
     };
     loadData();
-  }, [activeGroup, fetchTransactions, fetchBudgets, fetchRecurringTransactions, fetchCategories]);
+  }, [activeGroup?.id]); // Only depend on activeGroup.id, not the functions
 
   // Calculate date range
   const getDateRange = () => {
@@ -356,6 +365,72 @@ const ReportsSection: React.FC<ReportsSectionProps> = () => {
         </div>
       </Card>
 
+      {/* Planning Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6 bg-slate-800 border-slate-700">
+          <h3 className="text-lg font-semibold text-white mb-4">Task Analytics</h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-slate-700/50 rounded-lg">
+                <div className="text-2xl font-bold text-white">{tasks.length}</div>
+                <div className="text-sm text-slate-400">Total Tasks</div>
+              </div>
+              <div className="text-center p-4 bg-slate-700/50 rounded-lg">
+                <div className="text-2xl font-bold text-green-400">{getTasksByStatus('completed').length}</div>
+                <div className="text-sm text-slate-400">Completed</div>
+              </div>
+              <div className="text-center p-4 bg-slate-700/50 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-400">{getTasksByStatus('pending').length}</div>
+                <div className="text-sm text-slate-400">Pending</div>
+              </div>
+              <div className="text-center p-4 bg-slate-700/50 rounded-lg">
+                <div className="text-2xl font-bold text-red-400">{getOverdueTasks().length}</div>
+                <div className="text-sm text-slate-400">Overdue</div>
+              </div>
+            </div>
+            
+            {tasks.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-300">Completion Rate</span>
+                  <span className="text-white">
+                    {((getTasksByStatus('completed').length / tasks.length) * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <Progress 
+                  value={(getTasksByStatus('completed').length / tasks.length) * 100} 
+                  className="h-2" 
+                />
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-slate-800 border-slate-700">
+          <h3 className="text-lg font-semibold text-white mb-4">Task Status Distribution</h3>
+          <div className="space-y-3">
+            {[
+              { status: 'Pending', count: getTasksByStatus('pending').length, color: 'text-yellow-400' },
+              { status: 'In Progress', count: getTasksByStatus('in-progress').length, color: 'text-blue-400' },
+              { status: 'Completed', count: getTasksByStatus('completed').length, color: 'text-green-400' },
+              { status: 'Cancelled', count: getTasksByStatus('cancelled').length, color: 'text-gray-400' }
+            ].map(({ status, count, color }) => (
+              <div key={status} className="flex justify-between items-center">
+                <span className="text-slate-300">{status}</span>
+                <div className="flex items-center space-x-2">
+                  <span className={`font-semibold ${color}`}>{count}</span>
+                  {tasks.length > 0 && (
+                    <span className="text-xs text-slate-400">
+                      ({((count / tasks.length) * 100).toFixed(1)}%)
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
       {/* Alerts and Insights */}
       <Card className="p-6 bg-slate-800 border-slate-700">
         <h3 className="text-lg font-semibold text-white mb-4">Insights & Alerts</h3>
@@ -391,6 +466,30 @@ const ReportsSection: React.FC<ReportsSectionProps> = () => {
                 <p className="text-yellow-400 font-medium">Negative Cash Flow</p>
                 <p className="text-sm text-slate-400">
                   Expenses exceed income by {formatCurrency(Math.abs(netAmount))}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {getOverdueTasks().length > 0 && (
+            <div className="flex items-center space-x-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <AlertTriangle className="h-5 w-5 text-red-400" />
+              <div>
+                <p className="text-red-400 font-medium">Overdue Tasks</p>
+                <p className="text-sm text-slate-400">
+                  You have {getOverdueTasks().length} overdue task(s) that need attention
+                </p>
+              </div>
+            </div>
+          )}
+
+          {getTasksByStatus('pending').length > 10 && (
+            <div className="flex items-center space-x-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+              <Target className="h-5 w-5 text-orange-400" />
+              <div>
+                <p className="text-orange-400 font-medium">High Task Backlog</p>
+                <p className="text-sm text-slate-400">
+                  You have {getTasksByStatus('pending').length} pending tasks. Consider prioritizing or delegating some tasks.
                 </p>
               </div>
             </div>
